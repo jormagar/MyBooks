@@ -13,6 +13,12 @@ public interface BookDao {
     @Query("SELECT * FROM Books")
     LiveData<List<BookItem>> getBooks();
 
+    @Query("SELECT * FROM Books ORDER BY title ASC")
+    LiveData<List<BookItem>> getBooksOrderedByTitle();
+
+    @Query("SELECT * FROM Books ORDER BY author ASC")
+    LiveData<List<BookItem>> getBooksOrderedByAuthor();
+
     @Query("SELECT * FROM Books WHERE title = :title")
     LiveData<BookItem> getBookByTitle(String title);
 

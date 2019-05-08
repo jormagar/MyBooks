@@ -11,21 +11,20 @@ import android.view.ViewGroup;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import es.jormagar.myBooks.modelo.BookItem;
 
 public class BookAdapter extends RecyclerView.Adapter<BookViewHolder> {
 
-    private List<BookItem> mValues;
-    private Map<String, Integer> mBookListMap;
+    private List<BookItem> mBooks;
 
     private final BookListActivity mParentActivity;
     private final boolean mTwoPane;
 
-    public BookAdapter(BookListActivity parent, List<BookItem> items, boolean twoPane) {
-        mValues = items;
+    public BookAdapter(BookListActivity parent, boolean twoPane) {
+        mBooks = new ArrayList<>();
         mParentActivity = parent;
         mTwoPane = twoPane;
     }
@@ -36,9 +35,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookViewHolder> {
         //Diseño alternativo tipo card siguiendo guías Material Design
         //https://material.io/design/components/cards.html#specs
         int layout = R.layout.book_list_content_card;
-
-        //Diseño solicitado en la PEC1
-        //int layout = R.layout.book_list_content;
 
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(layout, parent, false);
@@ -55,7 +51,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookViewHolder> {
     @Override
     public void onBindViewHolder(final BookViewHolder holder, int position) {
 
-        BookItem book = mValues.get(position);
+        BookItem book = mBooks.get(position);
 
         //Mapeamos datos con elementos de la vista
         holder.mTitle.setText(book.getTitle());
@@ -106,18 +102,23 @@ public class BookAdapter extends RecyclerView.Adapter<BookViewHolder> {
 
     @Override
     public int getItemCount() {
-        return mValues.size();
+        return mBooks.size();
+    }
+
+    public List<BookItem> getItems() {
+        return mBooks;
     }
 
     public void setItems(List<BookItem> items) {
-        mValues = items;
+        mBooks = items;
         notifyDataSetChanged();
     }
 
     public void removeItem(String title) {
         int size = getItemCount();
+
         for (int i = 0; i < size; i++) {
-            if (mValues.get(i).getTitle().compareTo(title) == 0) {
+            if (mBooks.get(i).getTitle().compareTo(title) == 0) {
                 removeAt(i);
                 break;
             }
@@ -125,8 +126,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookViewHolder> {
     }
 
     public void removeAt(int position) {
-        mValues.remove(position);
+        mBooks.remove(position);
         notifyItemRemoved(position);
-        notifyItemRangeChanged(position, mValues.size());
+        notifyItemRangeChanged(position, mBooks.size());
     }
 }

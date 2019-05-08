@@ -2,6 +2,7 @@ package es.jormagar.myBooks;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
@@ -17,7 +18,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import es.jormagar.myBooks.modelo.BookContent;
 import es.jormagar.myBooks.modelo.BookItem;
 
 public class BookDetailFragment extends Fragment {
@@ -79,9 +79,13 @@ public class BookDetailFragment extends Fragment {
         //Iniciamos consulta de datos y adjuntamos un observer
         //cuando estén disponibles los datos los añadimos a las vistas
         System.out.println("mTitle en BookDetailFragment " + mTitle);
+
+        BookViewModel mBookViewModel =
+                ViewModelProviders.of(this).get(BookViewModel.class);
+
         if (mTitle != null) {
-            data = BookContent.getBookByTitle(mTitle);
-            data.observe(this, new Observer<BookItem>() {
+            data = mBookViewModel.getBookByTitle(mTitle);
+            data.observe(BookDetailFragment.this, new Observer<BookItem>() {
                 @Override
                 public void onChanged(@Nullable BookItem bookItem) {
                     updateViews(bookItem);

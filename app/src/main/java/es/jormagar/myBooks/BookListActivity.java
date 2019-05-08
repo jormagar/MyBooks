@@ -3,6 +3,8 @@ package es.jormagar.myBooks;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,7 +44,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import es.jormagar.myBooks.modelo.BookContent;
 import es.jormagar.myBooks.modelo.BookItem;
 
 public class BookListActivity extends AppCompatActivity {
@@ -58,7 +59,6 @@ public class BookListActivity extends AppCompatActivity {
     private boolean isSigned = false;
     private final int GRID_COLUMNS = 2;
     private BookAdapter adapter;
-    private BookContent bookContent;
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
@@ -72,6 +72,8 @@ public class BookListActivity extends AppCompatActivity {
 
     private SwipeRefreshLayout mSwipeContainer;
     private CoordinatorLayout mCoordinatorLayout;
+
+    private BookViewModel mBookViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,11 +117,11 @@ public class BookListActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
 
         View recyclerView = findViewById(R.id.book_list);
+        // Preparamos recycler view
+        setRecyclerView((RecyclerView) recyclerView);
 
-        if (recyclerView != null) {
-            // Preparamos recycler view
-            setRecyclerView((RecyclerView) recyclerView);
-        }
+        // Preparamos ViewModel
+        mBookViewModel = ViewModelProviders.of(this).get(BookViewModel.class);
 
         if (isSigned == false) {
             //Iniciamos sesión, dispara el proceso de rellenado de lista
@@ -168,10 +170,8 @@ public class BookListActivity extends AppCompatActivity {
         RecyclerView.LayoutManager lm = getLayoutForRecyclerView();
         recyclerView.setLayoutManager(lm);
 
-        bookContent = new BookContent(getApplicationContext());
-
         //Creamos adapter sin items
-        adapter = new BookAdapter(this, bookContent.ITEMS, mTwoPane);
+        adapter = new BookAdapter(this, mTwoPane);
         recyclerView.setAdapter(adapter);
     }
 
@@ -200,11 +200,11 @@ public class BookListActivity extends AppCompatActivity {
         //Ordenamos lista segun selección de menú
         switch (item.getItemId()) {
             case R.id.sort_by_title:
-                sortListWithComparator(bookContent.ITEMS, BookItem.titleComparator);
+                sortListByTitle();
                 return true;
 
             case R.id.sort_by_author:
-                sortListWithComparator(bookContent.ITEMS, BookItem.authorComparator);
+                sortListByAuthor();
                 return true;
 
             default:
@@ -212,15 +212,28 @@ public class BookListActivity extends AppCompatActivity {
         }
     }
 
-    private void sortListWithComparator(List list, Comparator comparator) {
-        Collections.sort(list, comparator);
-        //Avisamos al adapter que el origen  de datos ha cambiado para que se refresque
-        adapter.notifyDataSetChanged();
+    private void sortListByTitle() {
+        //Observamos datos tras consulta a la DB
+        mBookViewModel.getBooksOrderedByTitle().observe(this, new Observer<List<BookItem>>() {
+            @Override
+            public void onChanged(@Nullable List<BookItem> bookItems) {
+                if (bookItems != null) {
+                    setItems(bookItems);
+                }
+            }
+        });
     }
 
-    private void successSignIn(FirebaseUser user) {
-        Log.d(TAG, "successSignIn");
-        fetch();
+    private void sortListByAuthor() {
+        //Observamos datos tras consulta a la DB
+        mBookViewModel.getBooksOrderedByAuthor().observe(this, new Observer<List<BookItem>>() {
+            @Override
+            public void onChanged(@Nullable List<BookItem> bookItems) {
+                if (bookItems != null) {
+                    setItems(bookItems);
+                }
+            }
+        });
     }
 
     private void fetch() {
@@ -266,7 +279,7 @@ public class BookListActivity extends AppCompatActivity {
                         //aprovechando la estrategia de conflicto en el DAO se establece:
                         //@Insert(onConflict = OnConflictStrategy.IGNORE)
                         //Evitando hacer una nueva consulta para ver si existe
-                        BookContent.insert(bookList.get(i));
+                        mBookViewModel.insert(bookList.get(i));
                     }
 
                     setItems(bookList);
@@ -284,13 +297,11 @@ public class BookListActivity extends AppCompatActivity {
     private void loadLocalDatabaseItems() {
         Log.d(TAG, "loadLocalDatabaseItems");
 
-        BookContent.getBooks().observeForever(new Observer<List<BookItem>>() {
+        mBookViewModel.getBooks().observe(this, new Observer<List<BookItem>>() {
             @Override
-            public void onChanged(@Nullable List<BookItem> bookList) {
-
-                //Si tenemos datos locales, rellenamos lista
-                if (bookList != null) {
-                    setItems(bookList);
+            public void onChanged(@Nullable List<BookItem> bookItems) {
+                if (bookItems != null) {
+                    setItems(bookItems);
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
 
@@ -307,9 +318,6 @@ public class BookListActivity extends AppCompatActivity {
     private void setItems(List<BookItem> list) {
         Log.d(TAG, "setItems");
 
-        //Mapeamos caché de items en BookContent (util para el filtrado rápido sin consultar la db)
-        //Y pasamos lista al adapter
-        BookContent.ITEMS = list;
         setAdapterItems(list);
         checkIncomingIntent();
     }
@@ -319,6 +327,9 @@ public class BookListActivity extends AppCompatActivity {
 
         //Llenamos lista y refrescamos adapter
         adapter.setItems(items);
+
+        //Replicamos cambios en contenido estático accesible desde el servicio de notificaciones
+        BookHelper.mBooks = items;
 
         //Si estamos en medio de un refresco ocultamos loader de refresco y mostramos snackbar
         if (mSwipeContainer.isRefreshing()) {
@@ -338,7 +349,7 @@ public class BookListActivity extends AppCompatActivity {
                     //Login correcto
                     Log.d(TAG, "loginSuccess");
                     isSigned = true;
-                    successSignIn(user);
+                    fetch();
                 } else {
                     Log.d(TAG, "loginError");
                     isSigned = false;
@@ -388,8 +399,14 @@ public class BookListActivity extends AppCompatActivity {
 
             Log.d(TAG, "Book to be deleted: " + mTitle);
 
-            BookContent.deleteBookByTitle(mTitle);
+            //Borramos elemento de la lista
+            mBookViewModel.deleteBookByTitle(mTitle);
             adapter.removeItem(mTitle);
+
+            //Actualizamos replica estática de datos
+            BookHelper.mBooks = adapter.getItems();
+
+            Snackbar.make(mCoordinatorLayout, mTitle + " deleted", Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -440,7 +457,7 @@ public class BookListActivity extends AppCompatActivity {
                         // Log and toast
                         String msg = getString(R.string.msg_token_fmt, token);
                         Log.d(TAG, msg);
-                        Toast.makeText(BookListActivity.this, msg, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(BookListActivity.this, msg, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -457,7 +474,7 @@ public class BookListActivity extends AppCompatActivity {
                         }
 
                         Log.d(TAG, msg);
-                        Toast.makeText(BookListActivity.this, msg, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(BookListActivity.this, msg, Toast.LENGTH_SHORT).show();
                     }
                 });
     }

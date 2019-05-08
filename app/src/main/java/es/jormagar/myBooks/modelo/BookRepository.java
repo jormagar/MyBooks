@@ -1,49 +1,55 @@
 package es.jormagar.myBooks.modelo;
 
+import android.app.Application;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
-import android.arch.persistence.room.Delete;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
 
 import java.util.List;
 
-public class LocalBookDataSource implements BookDataSource {
-    private static BookDao mBookDao;
+/**
+ * Clase encargada de la comunicación entre BookViewModel y BookDao
+ */
+public class BookRepository {
+    private BookDao mBookDao;
+    private LiveData<List<BookItem>> mBooks;
 
-    //Repositorio de datos
-    public LocalBookDataSource(BookDao bookDao) {
-        mBookDao = bookDao;
+    public BookRepository(Application application) {
+        BooksDatabase db = BooksDatabase.getInstance(application);
+        mBookDao = db.bookDao();
+        mBooks = mBookDao.getBooks();
     }
 
-    @Override
     public LiveData<List<BookItem>> getBooks() {
         return mBookDao.getBooks();
     }
 
-    @Override
+    public LiveData<List<BookItem>> getBooksOrderedByTitle() {
+        return mBookDao.getBooksOrderedByTitle();
+    }
+
+    public LiveData<List<BookItem>> getBooksOrderedByAuthor() {
+        return mBookDao.getBooksOrderedByAuthor();
+    }
+
     public LiveData<BookItem> getBookByTitle(String title) {
         LiveData<BookItem> book = mBookDao.getBookByTitle(title);
         return book;
     }
 
-    @Override
     public void insertBook(final BookItem book) {
-        //Insertamos de forma asincrona
         new InsertTask(book).execute();
     }
 
-    @Override
     public void deleteBookByTitle(String title) {
         new DeleteTask(title).execute();
     }
 
-    @Override
+
     public void deleteAllBooks() {
         mBookDao.deleteAllBooks();
     }
 
-    private static class InsertTask extends AsyncTask<Void, Void, Void> {
+    private class InsertTask extends AsyncTask<Void, Void, Void> {
         BookItem mBook;
 
         public InsertTask(BookItem book) {
@@ -58,7 +64,7 @@ public class LocalBookDataSource implements BookDataSource {
         }
     }
 
-    private static class DeleteTask extends AsyncTask<Void, Void, Void> {
+    private class DeleteTask extends AsyncTask<Void, Void, Void> {
         String mTitle;
 
         public DeleteTask(String title) {
@@ -72,4 +78,5 @@ public class LocalBookDataSource implements BookDataSource {
             return null;
         }
     }
+
 }

@@ -1,20 +1,14 @@
 package es.jormagar.myBooks.push;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -22,9 +16,9 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import es.jormagar.myBooks.BookDetailActivity;
+import es.jormagar.myBooks.BookHelper;
 import es.jormagar.myBooks.BookListActivity;
 import es.jormagar.myBooks.R;
-import es.jormagar.myBooks.modelo.BookContent;
 
 public class MessagingService extends FirebaseMessagingService {
 
@@ -113,10 +107,12 @@ public class MessagingService extends FirebaseMessagingService {
     private Bundle getChannelConfig(String title) {
         Bundle channel = new Bundle();
 
-        if (BookContent.isEven(title)) {
+        if (BookHelper.isEven(title)) {
+            Log.d(TAG, "BOOK EVEN");
             channel.putString("id", getString(R.string.notification_channel_id_even));
             channel.putInt("color", Color.BLUE);
         } else {
+            Log.d(TAG, "BOOK ODD");
             channel.putString("id", getString(R.string.notification_channel_id_odd));
             channel.putInt("color", Color.GREEN);
         }
