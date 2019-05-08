@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">MyBooks</string>
+    <string name="title_book_list">Books</string>
+    <string name="title_book_detail">Book Detail</string>
+    <string name="sort_by_title">Sort by title</string>
+    <string name="sort_by_author">Sort by author</string>
+    <string name="data_not_available">Book data not available</string>
+    <string name="alert_title">Hey, bro!</string>
+    <string name="ok">OK</string>
+    <string name="refreshed">Your data has been refreshed!</string>
+    <string name="login_failed">Login failed. Please, check your network connection</string>
+    <string name="notification_channel_id_odd">push_channel_odd</string>
+    <string name="notification_channel_name_odd">Push Channel Odd</string>
+    <string name="notification_channel_description_odd">Push channel for odd books</string>
+    <string name="notification_channel_id_even">push_channel_even</string>
+    <string name="notification_channel_name_even">Push Channel Even</string>
+    <string name="notification_channel_description_even">Push channel for even books</string>
+    <string name="msg_subscribed">Subscribed to topic: %s</string>
+    <string name="msg_subscribe_failed">Failed subscribing to topic: %s</string>
+    <string name="msg_token_fmt" translatable="false">InstanceID Token: %s</string>
+    <string name="push_view_action">VIEW DETAIL</string>
+    <string name="push_delete_action">DELETE</string>
+</resources>
