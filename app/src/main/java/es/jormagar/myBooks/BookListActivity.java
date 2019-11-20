@@ -63,8 +63,8 @@ public class BookListActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
 
-    private final String FIREBASE_EMAIL = "jormagar@uoc.edu";
-    private final String FIREBASE_PASSWORD = "pec2android";
+    private final String FIREBASE_EMAIL = "******";
+    private final String FIREBASE_PASSWORD = "******";
     private final String DATABASE_REF_CONNECTED = ".info/connected";
     private final String DATABASE_REF_BOOK_LIST = "books";
 
