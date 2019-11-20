@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "865509435722",
-    "firebase_url": "https://mybooks-175dd.firebaseio.com",
-    "project_id": "mybooks-175dd",
-    "storage_bucket": "mybooks-175dd.appspot.com"
+    "project_number": "*",
+    "firebase_url": "*",
+    "project_id": "*",
+    "storage_bucket": "*"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:865509435722:android:2f994b008548e243",
+        "mobilesdk_app_id": "*",
         "android_client_info": {
           "package_name": "es.jormagar.myBooks"
         }
       },
       "oauth_client": [
         {
-          "client_id": "865509435722-d240cckjj49j4269p1b5td5pg1lsp4fb.apps.googleusercontent.com",
+          "client_id": "*",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDd_n2sR-taK_ghatGWV8qS3enArgL2_P0"
+          "current_key": "*"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "865509435722-d240cckjj49j4269p1b5td5pg1lsp4fb.apps.googleusercontent.com",
+              "client_id": "*",
               "client_type": 3
             }
           ]
